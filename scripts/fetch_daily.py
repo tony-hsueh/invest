@@ -20,6 +20,8 @@ HEADERS = {
 
 def fetch(url: str) -> dict:
     resp = requests.get(url, headers=HEADERS, timeout=20)
+    if resp.status_code == 404:
+        return {}
     resp.raise_for_status()
     return resp.json()
 
@@ -181,7 +183,7 @@ def main():
     print(f"        {len(block_trades)} 筆")
 
     # 合併成以股票代號為主鍵的結構
-    all_ids = set(prices) | set(institutional) | set(margin)
+    all_ids = set(prices)
     stocks = {}
     for stock_id in sorted(all_ids):
         stocks[stock_id] = {
