@@ -210,10 +210,38 @@ def main():
     print(f"  股票數：{len(stocks)}")
     print(f"  鉅額交易：{len(block_trades)} 筆")
 
+    # 更新 data/manifest.json（前端靠此知道有哪些日期可用）
+    _update_manifest(date_iso)
+
     # 印出 2330 當天資料預覽
     if "2330" in stocks:
         print("\n--- 台積電 (2330) 資料預覽 ---")
         print(json.dumps(stocks["2330"], ensure_ascii=False, indent=2))
+
+
+def _update_manifest(new_date_iso: str):
+    """將新日期加入 data/manifest.json，並依日期降冪排序。"""
+    import os
+    import datetime as dt
+    manifest_path = "data/manifest.json"
+    try:
+        with open(manifest_path, encoding="utf-8") as f:
+            manifest = json.load(f)
+    except FileNotFoundError:
+        manifest = {"dates": []}
+
+    dates = manifest.get("dates", [])
+    if new_date_iso not in dates:
+        dates.append(new_date_iso)
+    dates.sort(reverse=True)
+
+    manifest["dates"] = dates
+    manifest["latest"] = dates[0]
+    manifest["updated"] = dt.datetime.now().isoformat(timespec="seconds")
+
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=2)
+    print(f"  manifest.json 已更新（共 {len(dates)} 個交易日）")
 
 
 if __name__ == "__main__":
