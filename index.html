@@ -402,7 +402,7 @@ body {
 
 /* Hero */
 .hero {
-  background: linear-gradient(135deg, var(--bg1) 0%, #0d1625 100%);
+  background: linear-gradient(135deg, var(--bg1) 0%, var(--bg3) 100%);
   border: 1px solid var(--border);
   border-radius: 9px;
   padding: 18px;
@@ -434,8 +434,8 @@ body {
   gap: 8px;
 }
 .hg-item {
-  background: rgba(46,37,24,.04);
-  border: 1px solid var(--border2);
+  background: rgba(46,37,24,.07);
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 8px 10px;
 }
@@ -524,6 +524,23 @@ a.hero-name:hover { color: var(--ac); }
 
 @keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
 .fade-up { animation: fadeUp .22s ease forwards; }
+
+/* Streak button */
+.streak-btn {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--ts);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.streak-btn:hover { border-color: var(--fo); color: var(--fo); }
+.streak-btn.on { background: var(--fo2); border-color: var(--fo); color: var(--fo); }
 </style>
 </head>
 <body>
@@ -554,6 +571,7 @@ a.hero-name:hover { color: var(--ac); }
       <span class="date-label">清單日期</span>
       <select class="date-select" id="date-sel"></select>
       <span class="date-count" id="date-count">─ 個交易日</span>
+      <button id="streak-btn" class="streak-btn">外資連買賣</button>
     </div>
   </div>
   <div class="hdr-row2">
@@ -600,6 +618,7 @@ a.hero-name:hover { color: var(--ac); }
       <div class="empty-t">選擇個股查看分析</div>
       <div class="empty-s">點選左側股票清單中的任意一支</div>
     </div>
+    <div id="streak-view" style="display:none;flex:1;overflow-y:auto;overflow-x:hidden"></div>
   </div>
 </div>
 
@@ -806,6 +825,9 @@ async function selectStock(id) {
   ticker = id;
   document.querySelectorAll('.srow').forEach(r => r.classList.toggle('on', r.dataset.id===id));
   document.getElementById('dp-empty').style.display = 'none';
+  document.getElementById('streak-view').style.display = 'none';
+  document.getElementById('streak-btn').classList.remove('on');
+  showingStreakView = false;
   const dp = document.getElementById('dp-inner');
   dp.style.display = 'flex';
   dp.className = 'dp-scroll fade-up';
@@ -878,115 +900,139 @@ function heroHTML(id, s, p, inst, m, chg, pct1) {
 
 // ── 籌碼趨勢 ─────────────────────────────────────────────────────────────
 function chipTrendHTML(id) {
-  // 所有已快取的日期，由舊到新
-  const days = [...manifest.dates].reverse()
+  const allDays = [...manifest.dates].reverse()
     .map(d => ({ date: d, s: cache[d]?.stocks[id] }))
     .filter(x => x.s);
 
-  const n = days.length;
+  if (!allDays.length) return '';
 
-  // 外資每日淨買賣
-  const foNets  = days.map(d => d.s.institutional?.foreign_net  || 0);
-  const trNets  = days.map(d => d.s.institutional?.trust_net    || 0);
-  const margBal = days.map(d => d.s.margin?.margin_balance      || 0);
-  const shortBal= days.map(d => d.s.margin?.short_balance       || 0);
+  // 永遠從最新快取日期往回，不受 listDate 限制
+  const days = allDays;
+  const n    = days.length;
+  const PREVIEW = 10; // 預設顯示最新 10 天，其餘可展開
 
-  // 連續方向計算
-  function consecDays(arr) {
-    if (!arr.length) return { days: 0, dir: 0 };
-    const dir = arr[arr.length-1] > 0 ? 1 : arr[arr.length-1] < 0 ? -1 : 0;
-    if (!dir) return { days: 0, dir: 0 };
-    let cnt = 0;
-    for (let i = arr.length-1; i >= 0; i--) {
-      if (dir === 1 && arr[i] > 0) cnt++;
-      else if (dir === -1 && arr[i] < 0) cnt++;
-      else break;
+  const foNets = days.map(d => d.s.institutional?.foreign_net || 0);
+  const trNets = days.map(d => d.s.institutional?.trust_net   || 0);
+  const dlNets = days.map(d => d.s.institutional?.dealer_net  || 0);
+
+  // 計算當前連續段與前一段的對比
+  function streakInfo(arr) {
+    const last = arr[arr.length - 1];
+    const dir  = last > 0 ? 1 : last < 0 ? -1 : 0;
+    if (!dir) return { dir: 0, curDays: 0, curSum: 0, curStart: arr.length, prev: null };
+    let s = arr.length - 1;
+    while (s > 0 && Math.sign(arr[s-1]) === dir) s--;
+    const curSum  = arr.slice(s).reduce((a,b)=>a+b, 0);
+    const curDays = arr.length - s;
+    const pd = -dir;
+    let pe = s - 1, ps = null, prevSum = null, prevDays = null;
+    if (pe >= 0 && Math.sign(arr[pe]) === pd) {
+      ps = pe;
+      while (ps > 0 && Math.sign(arr[ps-1]) === pd) ps--;
+      prevSum  = arr.slice(ps, pe+1).reduce((a,b)=>a+b, 0);
+      prevDays = pe - ps + 1;
     }
-    return { days: cnt, dir };
+    return { dir, curDays, curSum, curStart: s,
+      prev: prevSum != null ? { dir: pd, days: prevDays, sum: prevSum, start: ps, end: pe } : null };
   }
 
-  const foCons  = consecDays(foNets);
-  const trCons  = consecDays(trNets);
-  const foCum   = foNets.reduce((a,b)=>a+b,0);
-  const trCum   = trNets.reduce((a,b)=>a+b,0);
-  const margDiff= n>=2 ? margBal[n-1]-margBal[0] : 0;
-  const shortDiff=n>=2 ? shortBal[n-1]-shortBal[0] : 0;
+  function sectionHTML(label, colorCls, arr) {
+    const info  = streakInfo(arr);
+    const word  = info.dir > 0 ? '買超' : info.dir < 0 ? '賣超' : '持平';
+    const dirCls = info.dir > 0 ? colorCls : info.dir < 0 ? 'dn' : 'flat';
 
-  // 迷你棒狀圖 SVG（水平、正上負下）
-  function miniBar(values, upCol, dnCol) {
-    const W=100, H=26, bw=Math.max(3,Math.floor((W-(values.length-1)*2)/values.length));
-    const amax = Math.max(...values.map(Math.abs),1);
-    let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:inline-block;vertical-align:middle">`;
-    s+=`<line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="rgba(46,37,24,.1)" stroke-width="1"/>`;
-    values.forEach((v,i)=>{
-      const x=i*(bw+2);
-      const h=Math.max(1,Math.abs(v)/amax*(H/2-1));
-      const y=v>=0?H/2-h:H/2;
-      s+=`<rect x="${x}" y="${y}" width="${bw}" height="${h}" fill="${v>=0?upCol:dnCol}" opacity=".85" rx="1"/>`;
-    });
-    return s+'</svg>';
+    let summary = '';
+    if (info.curDays > 0 && info.dir !== 0) {
+      summary += `<div style="margin-bottom:4px">
+        <span class="${dirCls}">連續${word} ${info.curDays} 天</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;margin-left:8px" class="${dirCls}">${sign(info.curSum)}${fv(info.curSum)}</span>
+      </div>`;
+      if (info.prev) {
+        const pw = info.prev.dir > 0 ? '買超' : '賣超';
+        const pc = info.prev.dir > 0 ? colorCls : 'dn';
+        const ratio = info.prev.sum !== 0 ? Math.round(Math.abs(info.curSum / info.prev.sum) * 100) : null;
+        let judgment = '', jCls = 'flat';
+        if (ratio != null) {
+          if (info.dir < 0) {
+            if (ratio < 30)      { judgment = '小幅獲利了結，籌碼未鬆動'; jCls = colorCls; }
+            else if (ratio < 70) { judgment = '中幅回吐，持續觀察';       jCls = 'fo'; }
+            else                 { judgment = '大量出清，籌碼鬆動';       jCls = 'dn'; }
+          } else {
+            if (ratio < 30)      { judgment = '試探性買進，力道偏弱'; jCls = 'flat'; }
+            else if (ratio < 70) { judgment = '逐步回補，方向轉正';   jCls = colorCls; }
+            else                 { judgment = '積極買回，籌碼集中';   jCls = colorCls; }
+          }
+        }
+        summary += `<div style="font-size:10px;color:var(--ts);line-height:1.8">
+          前次${pw}：<span class="${pc}">${sign(info.prev.sum)}${fv(info.prev.sum)}（${info.prev.days}天）</span>
+          ${ratio != null ? `｜<span class="${jCls}" style="font-weight:600">${ratio}%・${judgment}</span>` : ''}
+        </div>`;
+      }
+    } else {
+      summary = `<span class="flat" style="font-size:11px">─</span>`;
+    }
+
+    const allRows = arr.map((v, i) => ({
+      v, i,
+      isCur:  i >= info.curStart,
+      isPrev: info.prev ? (i >= info.prev.start && i <= info.prev.end) : false,
+    })).reverse();
+
+    function rowHTML({ v, i, isCur, isPrev }, hidden) {
+      const date    = days[i].date.slice(5);
+      const vc      = v > 0 ? colorCls : v < 0 ? 'dn' : 'flat';
+      const bg      = isCur ? 'rgba(61,122,136,.06)' : isPrev ? 'rgba(46,37,24,.03)' : 'transparent';
+      const dot     = isCur  ? `<span style="color:var(--ac);font-size:7px">●</span>`
+                    : isPrev ? `<span style="color:var(--border);font-size:7px">●</span>`
+                    :           `<span style="font-size:7px;visibility:hidden">●</span>`;
+      const display = hidden ? 'none' : 'flex';
+      return `<div class="${hidden?'chip-hidden':''}" style="display:${display};justify-content:space-between;align-items:center;padding:3px 8px;border-radius:4px;background:${bg}">
+        <span style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--td)">${dot}${date}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600" class="${vc}">${v===0?'─':sign(v)+fv(v)}</span>
+      </div>`;
+    }
+
+    const visible = allRows.slice(0, PREVIEW);
+    const hidden  = allRows.slice(PREVIEW);
+    const moreBtn = hidden.length > 0 ? `
+      <button data-exp="0" onclick="
+        const h=this.previousElementSibling.querySelectorAll('.chip-hidden');
+        const open=this.dataset.exp==='1';
+        h.forEach(el=>el.style.display=open?'none':'flex');
+        this.dataset.exp=open?'0':'1';
+        this.textContent=open?'查看更多 (${hidden.length}天)':'收起';
+      " style="margin-top:4px;background:none;border:none;color:var(--td);font-size:10px;font-family:'JetBrains Mono',monospace;cursor:pointer;padding:2px 8px;width:100%;text-align:left"
+        onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--td)'">
+        查看更多 (${hidden.length}天)
+      </button>` : '';
+
+    return `<div>
+      <div class="chip-lbl ${colorCls}" style="margin-bottom:6px">${label}</div>
+      <div style="margin-bottom:8px">${summary}</div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        ${visible.map(r => rowHTML(r, false)).join('')}
+        ${hidden.map(r => rowHTML(r, true)).join('')}
+      </div>
+      ${moreBtn}
+    </div>`;
   }
-
-  function consecLabel(c, buyWord, sellWord) {
-    if (!c.days) return `<span class="flat">─</span>`;
-    const word  = c.dir > 0 ? buyWord : sellWord;
-    const color = c.dir > 0 ? 'up' : 'dn';
-    return `<span class="${color}">連續${word} ${c.days} 天</span>`;
-  }
-
-  // 融資方向說明
-  const margDir  = margDiff > 0 ? `<span class="up">+${fi(margDiff)} ▲增加</span>` :
-                   margDiff < 0 ? `<span class="dn">${fi(margDiff)} ▼減少</span>` :
-                   `<span class="flat">持平</span>`;
-  const shortDir = shortDiff> 0 ? `<span class="dn">+${fi(shortDiff)} ▲增加</span>` :
-                   shortDiff< 0 ? `<span class="up">${fi(shortDiff)} ▼減少</span>` :
-                   `<span class="flat">持平</span>`;
-
-  const notEnough = n < 2
-    ? `<div style="font-size:11px;color:var(--td);padding:4px 0">切換到更多日期後，趨勢將自動累積顯示</div>`
-    : '';
 
   return `
-  <div class="card">
+  <div class="card" id="chip-trend-card">
     <div class="card-hdr">
       <span class="card-title">籌碼趨勢</span>
-      <span class="card-badge">近 ${n} 日</span>
+      <span class="card-badge">共 ${n} 日</span>
     </div>
-    <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
-      ${notEnough}
-      <div class="chip-row">
-        <div class="chip-meta">
-          <div class="chip-lbl fo">外資</div>
-          <div class="chip-val ${foCum>=0?'fo':'dn'}">${sign(foCum)}${fv(foCum)}</div>
-          <div class="chip-sub">${consecLabel(foCons,'買超','賣超')}</div>
-        </div>
-        <div class="chip-chart">${miniBar(foNets,'var(--up)','var(--dn)')}</div>
-      </div>
-      <div class="chip-row">
-        <div class="chip-meta">
-          <div class="chip-lbl tr">投信</div>
-          <div class="chip-val ${trCum>=0?'tr':'dn'}">${sign(trCum)}${fv(trCum)}</div>
-          <div class="chip-sub">${consecLabel(trCons,'買超','賣超')}</div>
-        </div>
-        <div class="chip-chart">${miniBar(trNets,'var(--tr)','var(--dn)')}</div>
-      </div>
-      <div style="border-top:1px solid var(--border2);padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div>
-          <div class="chip-lbl tr" style="margin-bottom:4px">融資餘額</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600">${fi(margBal[n-1])}</div>
-          <div style="font-size:11px;margin-top:2px">${n>=2?margDir:'─'}</div>
-          <div style="font-size:10px;color:var(--td);margin-top:3px">融資＝用借來的錢買股，餘額增加代表散戶加碼</div>
-        </div>
-        <div>
-          <div class="chip-lbl dn" style="margin-bottom:4px">融券餘額</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600">${fi(shortBal[n-1])}</div>
-          <div style="font-size:11px;margin-top:2px">${n>=2?shortDir:'─'}</div>
-          <div style="font-size:10px;color:var(--td);margin-top:3px">融券＝先借股票賣出，看跌者增加，餘額高代表空頭多</div>
-        </div>
-      </div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+      ${sectionHTML('外資', 'fo', foNets)}
+      <div style="border-top:1px solid var(--border2)"></div>
+      ${sectionHTML('投信', 'tr', trNets)}
+      <div style="border-top:1px solid var(--border2)"></div>
+      ${sectionHTML('自營', 'dl', dlNets)}
     </div>
   </div>`;
 }
+
 
 // ── 異常偵測 ──────────────────────────────────────────────────────────────
 function anomalyHTML(id) {
@@ -1114,21 +1160,6 @@ function instCardHTML(inst, date) {
     {k:'投信',n:inst.trust_net||0,   b:inst.trust_buy||0,   s:inst.trust_sell||0,   c:'tr'},
     {k:'自營',n:inst.dealer_net||0,  b:0, s:0,                                      c:'dl'},
   ];
-  const absMax = Math.max(...rows.map(r=>Math.abs(r.n)),1);
-  const bars = rows.map(r => {
-    const pct = r.n/absMax*50;
-    const left  = r.n>=0 ? 50 : 50+pct;
-    const width = Math.abs(pct);
-    return `
-      <div class="bar-row">
-        <div class="bar-lbl">${r.k}</div>
-        <div class="bar-track">
-          <div class="bar-mid"></div>
-          <div class="bar-fill" style="left:${left}%;width:${width}%;background:var(--${r.c});opacity:.75"></div>
-        </div>
-        <div class="bar-val ${r.n>0?r.c:r.n<0?'dn':'flat'}">${sign(r.n)}${fv(r.n)}</div>
-      </div>`;
-  }).join('');
   const cards = rows.map(r => `
     <div class="ig-item">
       <div class="ig-lbl ${r.c}">${r.k}</div>
@@ -1143,7 +1174,6 @@ function instCardHTML(inst, date) {
     </div>
     <div class="card-body">
       <div class="inst-grid">${cards}</div>
-      ${bars}
     </div>
   </div>`;
 }
@@ -1182,6 +1212,122 @@ function margCardHTML(m1, m0, prevDate) {
       </div>
     </div>
   </div>`;
+}
+
+// ── 外資連買連賣 ──────────────────────────────────────────────────────────
+let showingStreakView = false;
+
+function buildForeignStreaks() {
+  const dates = [...manifest.dates]; // newest first
+  const latestStocks = cache[dates[0]]?.stocks || {};
+  const buyStreaks = [], sellStreaks = [];
+
+  // 若相鄰兩日期間隔 > 5 天，代表中間有我們沒抓到的交易日，streak 應截斷
+  function dateDiff(a, b) {
+    return (new Date(a) - new Date(b)) / 86400000;
+  }
+
+  function countStreak(id, positive) {
+    let days = 0, sum = 0;
+    for (let i = 0; i < dates.length; i++) {
+      if (i > 0 && dateDiff(dates[i-1], dates[i]) > 5) break; // 資料缺口，截斷
+      const fn = cache[dates[i]]?.stocks[id]?.institutional?.foreign_net || 0;
+      if (positive ? fn > 0 : fn < 0) { days++; sum += fn; } else break;
+    }
+    return { days, sum };
+  }
+
+  for (const id of Object.keys(latestStocks)) {
+    const s0 = latestStocks[id];
+    const buy  = countStreak(id, true);
+    const sell = countStreak(id, false);
+    if (buy.days  >= 2) buyStreaks.push({ id, name: s0.name, days: buy.days,   sum: buy.sum,   close: s0.price?.close });
+    if (sell.days >= 2) sellStreaks.push({ id, name: s0.name, days: sell.days, sum: sell.sum, close: s0.price?.close });
+  }
+
+  buyStreaks.sort((a, b)  => b.days - a.days || b.sum - a.sum);
+  sellStreaks.sort((a, b) => b.days - a.days || a.sum - b.sum);
+  return { buyStreaks, sellStreaks };
+}
+
+function streakTableHTML(title, streaks, colorCls, isBuy) {
+  const badge = `<span class="card-badge">${streaks.length} 支</span>`;
+  if (!streaks.length) return `
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">${title}</span>${badge}</div>
+      <div class="card-body" style="color:var(--td);font-size:12px;text-align:center;padding:20px 0">─ 無符合資料 ─</div>
+    </div>`;
+
+  const tds = 'padding:6px 10px;border-bottom:1px solid var(--border2);';
+  const rows = streaks.map(({ id, name, days, sum, close }) => `
+    <tr class="streak-row" data-id="${id}">
+      <td style="${tds}font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ts);white-space:nowrap">${id}</td>
+      <td style="${tds}font-size:12px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</td>
+      <td style="${tds}font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;text-align:center" class="${colorCls}">${days}</td>
+      <td style="${tds}font-family:'JetBrains Mono',monospace;font-size:11px;text-align:right" class="${colorCls}">${isBuy?'+':''}${fv(sum)}</td>
+      <td style="${tds}font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right">${f(close)}</td>
+    </tr>`).join('');
+
+  const th = (t, align='left') => `<th style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:.07em;text-align:${align};padding:5px 10px;border-bottom:1px solid var(--border);background:var(--bg2)">${t}</th>`;
+  return `
+    <div class="card">
+      <div class="card-hdr"><span class="card-title" style="color:var(--${colorCls})">${title}</span>${badge}</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>${th('代號')}${th('名稱')}${th('天數','center')}${th('累計淨買','right')}${th('收盤價','right')}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderStreakView() {
+  const el = document.getElementById('streak-view');
+  if (!el) return;
+  const { buyStreaks, sellStreaks } = buildForeignStreaks();
+  const loaded = manifest.dates.filter(d => cache[d]).length;
+  const total  = manifest.dates.length;
+
+  el.innerHTML = `<div class="dp-scroll fade-up" style="gap:14px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--td)">
+      資料範圍：${loaded}/${total} 個交易日${loaded < total ? '　(背景載入中⋯)' : ''}
+    </div>
+    ${streakTableHTML('外資連買', buyStreaks, 'fo', true)}
+    ${streakTableHTML('外資連賣', sellStreaks, 'dn', false)}
+  </div>`;
+
+  el.querySelectorAll('.streak-row').forEach(row => {
+    row.style.cursor = 'pointer';
+    row.addEventListener('mouseover', () => row.style.background = 'var(--bg3)');
+    row.addEventListener('mouseout',  () => row.style.background = '');
+    row.addEventListener('click', () => {
+      showingStreakView = false;
+      document.getElementById('streak-view').style.display = 'none';
+      document.getElementById('streak-btn').classList.remove('on');
+      selectStock(row.dataset.id);
+    });
+  });
+}
+
+function toggleStreakView() {
+  showingStreakView = !showingStreakView;
+  const sv    = document.getElementById('streak-view');
+  const btn   = document.getElementById('streak-btn');
+  const inner = document.getElementById('dp-inner');
+  const empty = document.getElementById('dp-empty');
+  if (showingStreakView) {
+    sv.style.display    = 'flex';
+    sv.style.flexDirection = 'column';
+    inner.style.display = 'none';
+    empty.style.display = 'none';
+    btn.classList.add('on');
+    renderStreakView();
+  } else {
+    sv.style.display = 'none';
+    btn.classList.remove('on');
+    if (ticker) inner.style.display = 'flex';
+    else        empty.style.display = 'flex';
+  }
 }
 
 // ── Drawer ────────────────────────────────────────────────────────────────
@@ -1225,9 +1371,18 @@ async function init() {
     listDate = manifest.latest || manifest.dates[0];
     await loadDate(listDate);
 
-    // Also pre-load the previous date for comparison (in background)
-    const prevDate = manifest.dates[1];
-    if (prevDate) loadDate(prevDate).catch(()=>{});
+    // 背景並行載入所有日期，讓籌碼趨勢顯示完整歷史
+    manifest.dates.slice(1).forEach(date => {
+      if (!cache[date]) {
+        loadDate(date).then(() => {
+          if (ticker) {
+            const el = document.getElementById('chip-trend-card');
+            if (el) el.outerHTML = chipTrendHTML(ticker);
+          }
+          if (showingStreakView) renderStreakView();
+        }).catch(() => {});
+      }
+    });
 
     setupDrawer();
     renderDateSel();
@@ -1236,6 +1391,9 @@ async function init() {
 
     // Wire date select
     document.getElementById('date-sel').addEventListener('change', e => switchListDate(e.target.value));
+
+    // Wire streak view button
+    document.getElementById('streak-btn').addEventListener('click', toggleStreakView);
 
     // Wire search
     document.getElementById('srch').addEventListener('input', e => {
