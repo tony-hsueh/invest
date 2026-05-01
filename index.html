@@ -1023,12 +1023,10 @@ function chipTrendHTML(id) {
       <span class="card-title">籌碼趨勢</span>
       <span class="card-badge">共 ${n} 日</span>
     </div>
-    <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
-      ${sectionHTML('外資', 'fo', foNets)}
-      <div style="border-top:1px solid var(--border2)"></div>
-      ${sectionHTML('投信', 'tr', trNets)}
-      <div style="border-top:1px solid var(--border2)"></div>
-      ${sectionHTML('自營', 'dl', dlNets)}
+    <div class="card-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0">
+      <div style="padding-right:16px">${sectionHTML('外資', 'fo', foNets)}</div>
+      <div style="padding:0 16px;border-left:1px solid var(--border2);border-right:1px solid var(--border2)">${sectionHTML('投信', 'tr', trNets)}</div>
+      <div style="padding-left:16px">${sectionHTML('自營', 'dl', dlNets)}</div>
     </div>
   </div>`;
 }

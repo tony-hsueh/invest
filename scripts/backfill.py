@@ -143,12 +143,64 @@ def iter_months(start_month: str, end_month: str):
             y += 1
 
 
+def fix_institutional(date_iso: str):
+    """讀取現有 JSON，只補抓法人/融資/鉅額，覆寫回原檔"""
+    out_path = f"data/{date_iso}.json"
+    if not os.path.exists(out_path):
+        print(f"找不到 {out_path}，請先執行完整補抓")
+        sys.exit(1)
+
+    with open(out_path, encoding="utf-8") as f:
+        existing = json.load(f)
+
+    d_str = date_iso.replace("-", "")
+    print(f"補抓 {date_iso} 的法人/融資/鉅額...")
+    try:
+        institutional = fetch_institutional(d_str)
+        time.sleep(0.5)
+        margin = fetch_margin(d_str)
+        time.sleep(0.5)
+        block_trades = fetch_block_trades(d_str)
+    except Exception as e:
+        print(f"抓取失敗：{e}")
+        sys.exit(1)
+
+    stocks = existing["stocks"]
+    for sid in stocks:
+        if sid in institutional:
+            stocks[sid]["institutional"] = institutional[sid]
+        if sid in margin:
+            stocks[sid]["margin"] = margin[sid]
+    # 補上法人有但原檔沒有的股票（只有法人/融資，無OHLCV）
+    for sid in set(institutional) | set(margin):
+        if sid not in stocks:
+            stocks[sid] = {
+                "name": sid,
+                "price": None,
+                "institutional": institutional.get(sid),
+                "margin": margin.get(sid),
+            }
+
+    existing["block_trades"] = block_trades
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(existing, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"✓ {date_iso} 完成（法人 {len(institutional)} 支，融資 {len(margin)} 支，鉅額 {len(block_trades)} 筆）")
+
+
 def main():
     if len(sys.argv) < 2:
         print("用法：")
         print("  python3 scripts/backfill.py 2026-03")
         print("  python3 scripts/backfill.py 2026-01 2026-03")
+        print("  python3 scripts/backfill.py --fix 2026-03-03  # 只補抓指定日期的法人/融資/鉅額")
         sys.exit(1)
+
+    if sys.argv[1] == "--fix":
+        if len(sys.argv) < 3:
+            print("用法：python3 scripts/backfill.py --fix YYYY-MM-DD")
+            sys.exit(1)
+        fix_institutional(sys.argv[2])
+        return
 
     start_month = sys.argv[1][:7]
     end_month = sys.argv[2][:7] if len(sys.argv) > 2 else start_month
@@ -227,7 +279,26 @@ def main():
                 json.dump(output, f, ensure_ascii=False, separators=(",", ":"))
             print(f"  ✓ {date_iso}（{len(stocks)} 支）")
 
+    rebuild_manifest()
     print("\n完成！")
+
+
+def rebuild_manifest():
+    """掃描 data/ 目錄下所有 YYYY-MM-DD.json，重建 manifest.json"""
+    import glob
+    files = glob.glob("data/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].json")
+    dates = sorted(
+        [os.path.basename(f).replace(".json", "") for f in files],
+        reverse=True,
+    )
+    manifest = {
+        "dates": dates,
+        "latest": dates[0] if dates else None,
+        "updated": datetime.datetime.now().isoformat(timespec="seconds"),
+    }
+    with open("data/manifest.json", "w", encoding="utf-8") as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=2)
+    print(f"manifest.json 已重建（共 {len(dates)} 個交易日）")
 
 
 if __name__ == "__main__":
