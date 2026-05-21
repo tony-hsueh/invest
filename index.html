@@ -6,37 +6,39 @@
 <title>台股技術分析儀表板</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:        #f0ebe0;
-  --bg1:       #f8f4ee;
-  --bg2:       #ede8de;
-  --bg3:       #e6dfd3;
-  --border:    #d4cbbe;
-  --border2:   #ddd7cc;
-  --tp:        #2e2518;
-  --ts:        #7a6e5c;
-  --td:        #b0a48e;
-  --up:        #c0392b;
-  --up2:       rgba(192,57,43,.1);
-  --dn:        #27735a;
-  --dn2:       rgba(39,115,90,.1);
-  --flat:      #9a8e7c;
-  --fo:        #a06820;
-  --fo2:       rgba(160,104,32,.1);
-  --tr:        #3a6899;
-  --dl:        #7a4e8a;
-  --ac:        #3d7a88;
-  --ac2:       rgba(61,122,136,.1);
+  --bg:    #0b0d17;
+  --bg1:   #111421;
+  --bg2:   #181c2e;
+  --bg3:   #1f2340;
+  --border:  #2e3358;
+  --border2: #242848;
+  --tp:    #eef0ff;
+  --ts:    #8890b8;
+  --td:    #525a80;
+  --up:    #ff4560;
+  --up2:   rgba(255,69,96,.14);
+  --dn:    #00df8c;
+  --dn2:   rgba(0,223,140,.11);
+  --flat:  #6870a0;
+  --fo:    #ffbb00;
+  --fo2:   rgba(255,187,0,.13);
+  --tr:    #4dabff;
+  --dl:    #bf7fff;
+  --ac:    #7b6fff;
+  --ac2:   rgba(123,111,255,.15);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
 
 body {
   background: var(--bg);
+  background-image: radial-gradient(var(--border2) 1px, transparent 1px);
+  background-size: 24px 24px;
   color: var(--tp);
-  font-family: 'Noto Sans TC', sans-serif;
+  font-family: 'Outfit', 'Noto Sans TC', sans-serif;
   font-size: 13px;
   display: flex;
   flex-direction: column;
@@ -47,31 +49,34 @@ body {
   flex-shrink: 0;
   border-bottom: 1px solid var(--border);
   background: var(--bg1);
+  background-image: linear-gradient(90deg, rgba(123,111,255,.04) 0%, transparent 60%);
 }
 .hdr-row1 {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 0 18px;
-  height: 46px;
+  height: 48px;
   border-bottom: 1px solid var(--border2);
 }
 .logo {
-  font-family: 'Noto Serif TC', serif;
-  font-size: 16px;
-  font-weight: 700;
+  font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   flex-shrink: 0;
+  letter-spacing: -.02em;
 }
 .logo-mark {
-  width: 26px; height: 26px;
-  background: linear-gradient(135deg,var(--ac),var(--tr));
-  border-radius: 5px;
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--ac), #b06fff);
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: #fff;
+  font-size: 12px; font-weight: 800; color: #fff;
   font-family: 'JetBrains Mono',monospace;
+  box-shadow: 0 0 14px rgba(123,111,255,.45);
 }
 
 /* Date select */
@@ -81,25 +86,25 @@ body {
   gap: 8px;
   margin-left: auto;
 }
-.date-label { font-size: 11px; color: var(--ts); font-family: 'JetBrains Mono',monospace; }
+.date-label { font-size: 11px; color: var(--ts); font-family: 'JetBrains Mono',monospace; font-weight: 500; }
 .date-select {
   background: var(--bg2);
   border: 1px solid var(--border);
   color: var(--ac);
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
-  padding: 4px 28px 4px 10px;
-  border-radius: 5px;
+  padding: 5px 28px 5px 10px;
+  border-radius: 7px;
   cursor: pointer;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%233d7a88'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237b6fff'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 9px center;
-  transition: border-color .15s;
+  transition: border-color .15s, box-shadow .15s;
 }
-.date-select:focus { border-color: var(--ac); }
+.date-select:focus { border-color: var(--ac); box-shadow: 0 0 0 3px rgba(123,111,255,.15); }
 .date-count { font-size: 11px; color: var(--td); font-family: 'JetBrains Mono',monospace; }
 
 /* Market breadth */
@@ -110,10 +115,10 @@ body {
   padding: 0 16px;
   border-right: 1px solid var(--border2);
 }
-.b-num { font-family: 'JetBrains Mono',monospace; font-size: 12px; font-weight: 600; }
+.b-num { font-family: 'JetBrains Mono',monospace; font-size: 12px; font-weight: 700; }
 .b-bar {
-  width: 60px; height: 3px;
-  background: var(--border);
+  width: 64px; height: 4px;
+  background: var(--bg3);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -141,8 +146,8 @@ body {
   flex-shrink: 0;
 }
 .hstat:last-child { border: none; }
-.hstat-lbl { font-size: 9px; color: var(--td); text-transform: uppercase; letter-spacing: .08em; font-family: 'JetBrains Mono',monospace; }
-.hstat-val { font-family: 'JetBrains Mono',monospace; font-size: 13px; font-weight: 600; }
+.hstat-lbl { font-size: 9px; color: var(--td); text-transform: uppercase; letter-spacing: .1em; font-family: 'JetBrains Mono',monospace; font-weight: 600; }
+.hstat-val { font-family: 'JetBrains Mono',monospace; font-size: 13px; font-weight: 700; }
 
 /* ── Main layout ─────────────────────────────── */
 #main {
@@ -159,21 +164,21 @@ body {
   top: 12px;
   left: 12px;
   z-index: 30;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 7px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  transition: background .15s, border-color .15s;
+  transition: background .15s, border-color .15s, box-shadow .15s;
   flex-shrink: 0;
 }
-#drawer-toggle:hover { background: var(--bg3); border-color: var(--ac); }
+#drawer-toggle:hover { background: var(--bg3); border-color: var(--ac); box-shadow: 0 0 10px rgba(123,111,255,.25); }
 #drawer-toggle span {
   display: block;
   width: 14px;
@@ -189,7 +194,8 @@ body {
   display: none;
   position: absolute;
   inset: 0;
-  background: rgba(46,37,24,.35);
+  background: rgba(11,13,23,.75);
+  backdrop-filter: blur(3px);
   z-index: 15;
 }
 #drawer-overlay.show { display: block; }
@@ -211,7 +217,7 @@ body {
   transform: translateX(-100%);
 }
 .lp-search {
-  padding: 9px 10px;
+  padding: 10px 10px;
   border-bottom: 1px solid var(--border2);
   position: relative;
 }
@@ -224,15 +230,15 @@ body {
   width: 100%;
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 7px;
   color: var(--tp);
-  font-family: 'Noto Sans TC',sans-serif;
+  font-family: 'Outfit','Noto Sans TC',sans-serif;
   font-size: 13px;
-  padding: 6px 10px 6px 30px;
+  padding: 7px 10px 7px 30px;
   outline: none;
-  transition: border-color .15s;
+  transition: border-color .15s, box-shadow .15s;
 }
-.search-inp:focus { border-color: var(--ac); }
+.search-inp:focus { border-color: var(--ac); box-shadow: 0 0 0 3px rgba(123,111,255,.12); }
 .search-inp::placeholder { color: var(--td); }
 
 .sort-tabs {
@@ -244,10 +250,11 @@ body {
 }
 .sort-tabs::-webkit-scrollbar { display: none; }
 .stab {
-  padding: 7px 9px;
+  padding: 8px 10px;
   cursor: pointer;
   color: var(--ts);
   font-size: 11px;
+  font-weight: 600;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
   flex-shrink: 0;
@@ -262,9 +269,11 @@ body {
   font-size: 9px;
   color: var(--td);
   text-transform: uppercase;
-  letter-spacing: .07em;
+  letter-spacing: .1em;
   font-family: 'JetBrains Mono',monospace;
+  font-weight: 600;
   border-bottom: 1px solid var(--border2);
+  background: var(--bg2);
   flex-shrink: 0;
 }
 .lh1 { width: 48px; }
@@ -289,44 +298,47 @@ body {
   position: relative;
   transition: background .1s;
 }
-.srow:hover { background: var(--bg3); }
-.srow.on { background: rgba(0,180,216,.07); }
+.srow:hover { background: var(--bg2); }
+.srow.on { background: var(--ac2); }
 .srow.on::before {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 2px;
+  width: 3px;
   background: var(--ac);
+  box-shadow: 0 0 8px rgba(123,111,255,.6);
 }
 .s1 { width: 48px; font-family: 'JetBrains Mono',monospace; font-size: 11px; color: var(--ts); flex-shrink: 0; }
-.s2 { flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px; }
-.s3 { width: 62px; text-align: right; font-family: 'JetBrains Mono',monospace; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+.s2 { flex: 1; font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px; }
+.s3 { width: 62px; text-align: right; font-family: 'JetBrains Mono',monospace; font-size: 13px; font-weight: 700; flex-shrink: 0; }
 .s4 { width: 70px; text-align: right; font-family: 'JetBrains Mono',monospace; font-size: 11px; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
-.s4-abs { font-size: 12px; }
-.s4-pct { font-size: 10px; opacity: .75; }
+.s4-abs { font-size: 12px; font-weight: 600; }
+.s4-pct { font-size: 10px; opacity: .8; }
 .s-flow { width: 3px; height: 22px; border-radius: 2px; margin-left: 3px; flex-shrink: 0; }
-.vol-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: rgba(0,180,216,.12); pointer-events: none; }
-.vol-fill { height: 100%; background: rgba(0,180,216,.35); }
+.vol-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: rgba(123,111,255,.07); pointer-events: none; }
+.vol-fill { height: 100%; background: rgba(123,111,255,.35); }
 
 .lpager {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 3px;
-  padding: 7px 6px;
+  padding: 8px 6px;
   border-top: 1px solid var(--border2);
   flex-shrink: 0;
   flex-wrap: wrap;
+  background: var(--bg1);
 }
 .pbtn {
   background: var(--bg2);
   border: 1px solid var(--border);
   color: var(--ts);
   padding: 3px 9px;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
   font-family: 'JetBrains Mono',monospace;
   font-size: 10px;
+  font-weight: 600;
   transition: all .15s;
 }
 .pbtn:hover { border-color: var(--ac); color: var(--ac); }
@@ -365,14 +377,14 @@ body {
   color: var(--td);
 }
 .empty-icon { font-size: 40px; }
-.empty-t { font-family: 'Noto Serif TC',serif; font-size: 15px; }
+.empty-t { font-family: 'Outfit','Noto Sans TC',sans-serif; font-size: 15px; font-weight: 600; }
 .empty-s { font-size: 12px; opacity: .6; }
 
 /* Cards */
 .card {
   background: var(--bg1);
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 10px;
   overflow: hidden;
 }
 .card-hdr {
@@ -381,13 +393,15 @@ body {
   gap: 8px;
   padding: 10px 14px;
   border-bottom: 1px solid var(--border2);
+  background: var(--bg2);
 }
 .card-title {
   font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: .09em;
+  letter-spacing: .1em;
   color: var(--ts);
   font-family: 'JetBrains Mono',monospace;
+  font-weight: 600;
 }
 .card-badge {
   font-family: 'JetBrains Mono',monospace;
@@ -396,26 +410,36 @@ body {
   border-radius: 10px;
   background: var(--ac2);
   color: var(--ac);
-  border: 1px solid rgba(0,180,216,.2);
+  border: 1px solid rgba(123,111,255,.28);
+  font-weight: 700;
 }
 .card-body { padding: 14px; }
 
 /* Hero */
 .hero {
-  background: linear-gradient(135deg, var(--bg1) 0%, var(--bg3) 100%);
+  background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 10px;
   padding: 18px;
   position: relative;
   overflow: hidden;
 }
+.hero::before {
+  content: '';
+  position: absolute;
+  right: 20px; top: -50px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(123,111,255,.06) 0%, transparent 65%);
+  pointer-events: none;
+}
 .hero::after {
   content: '';
   position: absolute;
-  right: -30px; top: -30px;
-  width: 160px; height: 160px;
+  left: -30px; bottom: -50px;
+  width: 180px; height: 180px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(61,122,136,.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0,223,140,.04) 0%, transparent 65%);
   pointer-events: none;
 }
 .hero-top {
@@ -424,7 +448,7 @@ body {
   align-items: flex-start;
   margin-bottom: 14px;
 }
-.hero-name { font-family: 'Noto Serif TC',serif; font-size: 20px; font-weight: 700; line-height: 1.2; }
+.hero-name { font-family: 'Outfit','Noto Sans TC',sans-serif; font-size: 20px; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; }
 .hero-ticker { font-family: 'JetBrains Mono',monospace; font-size: 12px; color: var(--ts); margin-top: 3px; }
 .hero-price { font-family: 'JetBrains Mono',monospace; font-size: 30px; font-weight: 700; line-height: 1; text-align: right; }
 .hero-chg { font-family: 'JetBrains Mono',monospace; font-size: 14px; text-align: right; margin-top: 3px; display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
@@ -434,13 +458,15 @@ body {
   gap: 8px;
 }
 .hg-item {
-  background: rgba(46,37,24,.07);
+  background: rgba(255,255,255,.03);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 7px;
   padding: 8px 10px;
+  transition: border-color .15s;
 }
-.hg-lbl { font-size: 14px; color: var(--ts); font-family: 'Noto Sans TC',sans-serif; margin-bottom: 3px; }
-.hg-val { font-family: 'JetBrains Mono',monospace; font-size: 13px; font-weight: 600; }
+.hg-item:hover { border-color: var(--ac); }
+.hg-lbl { font-size: 10px; color: var(--ts); font-family: 'Outfit','Noto Sans TC',sans-serif; margin-bottom: 3px; font-weight: 500; }
+.hg-val { font-family: 'JetBrains Mono',monospace; font-size: 13px; font-weight: 700; }
 
 /* Stock name link */
 a.hero-name {
@@ -463,17 +489,17 @@ a.hero-name:hover { color: var(--ac); }
 }
 .ig-item {
   background: var(--bg2);
-  border: 1px solid var(--border2);
-  border-radius: 7px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
   padding: 10px 12px;
 }
-.ig-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .07em; font-family: 'JetBrains Mono',monospace; margin-bottom: 5px; }
+.ig-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .1em; font-family: 'JetBrains Mono',monospace; margin-bottom: 5px; font-weight: 700; }
 .ig-net { font-family: 'JetBrains Mono',monospace; font-size: 16px; font-weight: 700; line-height: 1; margin-bottom: 3px; }
 .ig-sub { font-family: 'JetBrains Mono',monospace; font-size: 9px; color: var(--td); }
 
 .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .bar-lbl { width: 36px; font-size: 10px; color: var(--ts); font-family: 'JetBrains Mono',monospace; flex-shrink: 0; }
-.bar-track { flex: 1; height: 5px; background: var(--bg2); border-radius: 3px; position: relative; overflow: visible; }
+.bar-track { flex: 1; height: 5px; background: var(--bg3); border-radius: 3px; position: relative; overflow: visible; }
 .bar-mid { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--border); }
 .bar-fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; transition: width .4s, left .4s; }
 .bar-val { width: 72px; text-align: right; font-family: 'JetBrains Mono',monospace; font-size: 10px; flex-shrink: 0; }
@@ -481,19 +507,19 @@ a.hero-name:hover { color: var(--ac); }
 /* Chip trend */
 .chip-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .chip-meta { flex: 1; min-width: 0; }
-.chip-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; font-family: 'JetBrains Mono',monospace; margin-bottom: 3px; }
+.chip-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; font-family: 'JetBrains Mono',monospace; margin-bottom: 3px; font-weight: 700; }
 .chip-val { font-family: 'JetBrains Mono',monospace; font-size: 16px; font-weight: 700; line-height: 1; }
 .chip-sub { font-size: 11px; margin-top: 3px; }
 .chip-chart { flex-shrink: 0; }
 
 /* Margin */
 .marg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.marg-title { font-size: 10px; color: var(--ts); text-transform: uppercase; letter-spacing: .07em; font-family: 'JetBrains Mono',monospace; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+.marg-title { font-size: 10px; color: var(--ts); text-transform: uppercase; letter-spacing: .1em; font-family: 'JetBrains Mono',monospace; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; font-weight: 600; }
 .marg-dot { width: 5px; height: 5px; border-radius: 50%; }
 .mtbl { width: 100%; border-collapse: collapse; }
-.mtbl td { padding: 4px 0; font-family: 'JetBrains Mono',monospace; font-size: 11px; border-bottom: 1px solid var(--border2); }
+.mtbl td { padding: 5px 0; font-family: 'JetBrains Mono',monospace; font-size: 11px; border-bottom: 1px solid var(--border2); }
 .mtbl td:first-child { color: var(--ts); font-size: 10px; }
-.mtbl td:last-child { text-align: right; font-weight: 600; }
+.mtbl td:last-child { text-align: right; font-weight: 700; }
 .mtbl tr:last-child td { border: none; }
 .delta { font-size: 9px; opacity: .8; margin-left: 3px; }
 
@@ -516,14 +542,34 @@ a.hero-name:hover { color: var(--ac); }
   transition: opacity .4s;
 }
 #boot.gone { opacity: 0; pointer-events: none; }
-.boot-logo { font-family: 'Noto Serif TC',serif; font-size: 22px; font-weight: 700; }
-.boot-bar { width: 180px; height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+.boot-logo { font-family: 'Outfit','Noto Sans TC',sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+.boot-bar { width: 200px; height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
 .boot-fill { height: 100%; width: 30%; background: linear-gradient(90deg,var(--ac),var(--tr)); border-radius: 1px; animation: bpulse 1.2s ease-in-out infinite; }
 @keyframes bpulse { 0%{width:0} 50%{width:75%} 100%{width:100%} }
 .boot-txt { font-family: 'JetBrains Mono',monospace; font-size: 11px; color: var(--ts); }
 
-@keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 .fade-up { animation: fadeUp .22s ease forwards; }
+
+/* Copyable ticker */
+.ticker-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  user-select: none;
+}
+.copy-icon {
+  flex-shrink: 0;
+  line-height: 0;
+  opacity: 0;
+  color: var(--td);
+  transition: opacity .15s, color .15s;
+}
+.ticker-wrap:hover .copy-icon { opacity: 1; color: var(--ac); }
+.ticker-wrap.copied .copy-icon { opacity: 1; color: var(--dn); }
+.srow:hover .copy-icon,
+.streak-row:hover .copy-icon { opacity: .45; }
 
 /* Streak button */
 .streak-btn {
@@ -532,14 +578,15 @@ a.hero-name:hover { color: var(--ac); }
   color: var(--ts);
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  padding: 4px 12px;
-  border-radius: 5px;
+  font-weight: 600;
+  padding: 5px 13px;
+  border-radius: 7px;
   cursor: pointer;
   transition: all .15s;
   flex-shrink: 0;
   white-space: nowrap;
 }
-.streak-btn:hover { border-color: var(--fo); color: var(--fo); }
+.streak-btn:hover { border-color: var(--fo); color: var(--fo); box-shadow: 0 0 10px rgba(255,187,0,.15); }
 .streak-btn.on { background: var(--fo2); border-color: var(--fo); color: var(--fo); }
 </style>
 </head>
@@ -623,6 +670,22 @@ a.hero-name:hover { color: var(--ac); }
 </div>
 
 <script>
+// ── Copy ticker ───────────────────────────────────────────────────────────
+const ICON_COPY  = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const ICON_CHECK = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+function copyTicker(id, wrapEl) {
+  navigator.clipboard.writeText(id).then(() => {
+    const icon = wrapEl.querySelector('.copy-icon');
+    if (icon) icon.innerHTML = ICON_CHECK;
+    wrapEl.classList.add('copied');
+    setTimeout(() => {
+      if (icon) icon.innerHTML = ICON_COPY;
+      wrapEl.classList.remove('copied');
+    }, 1100);
+  }).catch(() => {});
+}
+
 // ── Config ────────────────────────────────────────────────────────────────
 const MANIFEST_URL = './data/manifest.json';
 const DATA_BASE    = './data/';
@@ -748,14 +811,14 @@ function renderList() {
     const c   = cls(chg);
     const pStr = p!=null ? sign(p)+p.toFixed(2)+'%' : '─';
     const fn  = s.institutional?.foreign_net||0;
-    const flowCol = fn>0 ? 'rgba(240,160,48,.55)' : fn<0 ? 'rgba(255,64,96,.35)' : 'transparent';
+    const flowCol = fn>0 ? 'rgba(255,187,0,.65)' : fn<0 ? 'rgba(255,69,96,.45)' : 'transparent';
     const vp  = (s.price.volume||0)/maxVol*100;
 
     const row = document.createElement('div');
     row.className = 'srow'+(id===ticker?' on':'');
     row.dataset.id = id;
     row.innerHTML = `
-      <div class="s1">${id}</div>
+      <div class="s1"><span class="ticker-wrap" title="複製代號">${id}<span class="copy-icon">${ICON_COPY}</span></span></div>
       <div class="s2">${s.name}</div>
       <div class="s3 ${c}">${f(s.price.close)}</div>
       <div class="s4 ${c}">
@@ -765,6 +828,7 @@ function renderList() {
       <div class="s-flow" style="background:${flowCol}"></div>
       <div class="vol-bar"><div class="vol-fill" style="width:${vp}%"></div></div>`;
     row.addEventListener('click', () => selectStock(id));
+    row.querySelector('.ticker-wrap').addEventListener('click', e => { e.stopPropagation(); copyTicker(id, e.currentTarget); });
     frag.appendChild(row);
   }
   const el = document.getElementById('slist');
@@ -874,7 +938,7 @@ function heroHTML(id, s, p, inst, m, chg, pct1) {
     <div class="hero-top">
       <div>
         <a class="hero-name" href="https://tw.stock.yahoo.com/quote/${id}.TW/technical-analysis" target="_blank" rel="noopener">${s.name}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:.4;flex-shrink:0"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-        <div class="hero-ticker">${id} · ${listDate}</div>
+        <div class="hero-ticker"><span class="ticker-wrap" title="複製代號" onclick="copyTicker('${id}',this)">${id}<span class="copy-icon">${ICON_COPY}</span></span> · ${listDate}</div>
       </div>
       <div>
         <div class="hero-price ${c}">${f(p.close)}</div>
@@ -981,7 +1045,7 @@ function chipTrendHTML(id) {
     function rowHTML({ v, i, isCur, isPrev }, hidden) {
       const date    = days[i].date.slice(5);
       const vc      = v > 0 ? colorCls : v < 0 ? 'dn' : 'flat';
-      const bg      = isCur ? 'rgba(61,122,136,.06)' : isPrev ? 'rgba(46,37,24,.03)' : 'transparent';
+      const bg      = isCur ? 'rgba(123,111,255,.08)' : isPrev ? 'rgba(255,255,255,.03)' : 'transparent';
       const dot     = isCur  ? `<span style="color:var(--ac);font-size:7px">●</span>`
                     : isPrev ? `<span style="color:var(--border);font-size:7px">●</span>`
                     :           `<span style="font-size:7px;visibility:hidden">●</span>`;
@@ -1215,6 +1279,17 @@ function margCardHTML(m1, m0, prevDate) {
 // ── 外資連買連賣 ──────────────────────────────────────────────────────────
 let showingStreakView = false;
 
+function calcMA60(id) {
+  const dates = manifest.dates;
+  const closes = [];
+  for (let i = 0; i < dates.length && closes.length < 60; i++) {
+    const close = cache[dates[i]]?.stocks[id]?.price?.close;
+    if (close != null) closes.push(close);
+  }
+  if (closes.length < 20) return null; // 至少需要 20 天才計算
+  return closes.reduce((a, b) => a + b, 0) / closes.length;
+}
+
 function buildForeignStreaks() {
   const dates = [...manifest.dates]; // newest first
   const latestStocks = cache[dates[0]]?.stocks || {};
@@ -1239,7 +1314,16 @@ function buildForeignStreaks() {
     const s0 = latestStocks[id];
     const buy  = countStreak(id, true);
     const sell = countStreak(id, false);
-    if (buy.days  >= 2) buyStreaks.push({ id, name: s0.name, days: buy.days,   sum: buy.sum,   close: s0.price?.close });
+    if (buy.days >= 2) {
+      const ma60  = calcMA60(id);
+      const close = s0.price?.close;
+      if (ma60 != null && close != null) {
+        const ma60pct = (close - ma60) / ma60 * 100;
+        if (ma60pct >= 0 && ma60pct <= 10) {
+          buyStreaks.push({ id, name: s0.name, days: buy.days, sum: buy.sum, close, ma60pct });
+        }
+      }
+    }
     if (sell.days >= 2) sellStreaks.push({ id, name: s0.name, days: sell.days, sum: sell.sum, close: s0.price?.close });
   }
 
@@ -1257,22 +1341,27 @@ function streakTableHTML(title, streaks, colorCls, isBuy) {
     </div>`;
 
   const tds = 'padding:6px 10px;border-bottom:1px solid var(--border2);';
-  const rows = streaks.map(({ id, name, days, sum, close }) => `
+  const rows = streaks.map(({ id, name, days, sum, close, ma60pct }) => {
+    const ma60cls = ma60pct != null ? (ma60pct <= 5 ? 'dn' : 'fo') : 'flat';
+    return `
     <tr class="streak-row" data-id="${id}">
-      <td style="${tds}font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ts);white-space:nowrap">${id}</td>
+      <td style="${tds}font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ts);white-space:nowrap"><span class="ticker-wrap" title="複製代號" onclick="event.stopPropagation();copyTicker('${id}',this)">${id}<span class="copy-icon">${ICON_COPY}</span></span></td>
       <td style="${tds}font-size:12px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</td>
       <td style="${tds}font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;text-align:center" class="${colorCls}">${days}</td>
       <td style="${tds}font-family:'JetBrains Mono',monospace;font-size:11px;text-align:right" class="${colorCls}">${isBuy?'+':''}${fv(sum)}</td>
       <td style="${tds}font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right">${f(close)}</td>
-    </tr>`).join('');
+      ${isBuy ? `<td style="${tds}font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;text-align:right" class="${ma60cls}">+${ma60pct.toFixed(1)}%</td>` : ''}
+    </tr>`;
+  }).join('');
 
   const th = (t, align='left') => `<th style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--td);text-transform:uppercase;letter-spacing:.07em;text-align:${align};padding:5px 10px;border-bottom:1px solid var(--border);background:var(--bg2)">${t}</th>`;
   return `
     <div class="card">
       <div class="card-hdr"><span class="card-title" style="color:var(--${colorCls})">${title}</span>${badge}</div>
+      ${isBuy ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--td);padding:6px 14px 0">篩選條件：收盤價在 60MA 上方 0%～10%</div>` : ''}
       <div style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse">
-          <thead><tr>${th('代號')}${th('名稱')}${th('天數','center')}${th('累計淨買','right')}${th('收盤價','right')}</tr></thead>
+          <thead><tr>${th('代號')}${th('名稱')}${th('天數','center')}${th('累計淨買','right')}${th('收盤價','right')}${isBuy ? th('距MA60','right') : ''}</tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
