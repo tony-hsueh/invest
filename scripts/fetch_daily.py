@@ -8,6 +8,8 @@
   python3 scripts/fetch_daily.py 2026-04-10   # 抓指定日期
 """
 import sys
+import csv
+import io
 import json
 import time
 import datetime
@@ -24,6 +26,14 @@ def fetch(url: str) -> dict:
         return {}
     resp.raise_for_status()
     return resp.json()
+
+
+def fetch_csv(url: str) -> list:
+    resp = requests.get(url, headers=HEADERS, timeout=20)
+    if resp.status_code == 404:
+        return []
+    resp.raise_for_status()
+    return list(csv.reader(io.StringIO(resp.text)))
 
 
 def parse_number(s: str):
@@ -45,25 +55,31 @@ def parse_int(s: str):
 # ── 1. 每日收盤價（全上市）────────────────────────────────────────────────
 def fetch_prices(date_str: str) -> dict:
     """回傳 {stock_id: {name, open, high, low, close, volume, amount, change, transactions}}"""
+    # TWSE 已不再遵守 response=json，此端點固定回傳 CSV（Content-Type: text/csv）
     url = f"https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=json&date={date_str}"
-    data = fetch(url)
-    # TWSE 在休市日會回傳最近一個交易日的資料，用 date 欄位比對確認
-    if data.get("date", "") != date_str:
+    rows = fetch_csv(url)
+    if len(rows) < 2:
         return {}
-    # fields: 證券代號, 證券名稱, 成交股數, 成交金額, 開盤價, 最高價, 最低價, 收盤價, 漲跌價差, 成交筆數
+    # 表頭：日期,證券代號,證券名稱,成交股數,成交金額,開盤價,最高價,最低價,收盤價,漲跌價差,成交筆數
+    # TWSE 在休市日會回傳最近一個交易日的資料，用日期欄位比對確認（日期欄為民國年 YYYMMDD）
+    expected_roc_date = f"{int(date_str[:4]) - 1911}{date_str[4:]}"
+    if rows[1][0] != expected_roc_date:
+        return {}
     result = {}
-    for row in data.get("data", []):
-        stock_id = row[0].strip()
+    for row in rows[1:]:
+        if len(row) < 11:
+            continue
+        stock_id = row[1].strip()
         result[stock_id] = {
-            "name":         row[1].strip(),
-            "volume":       parse_int(row[2]),      # 成交股數
-            "amount":       parse_int(row[3]),      # 成交金額
-            "open":         parse_number(row[4]),   # 開盤價
-            "high":         parse_number(row[5]),   # 最高價
-            "low":          parse_number(row[6]),   # 最低價
-            "close":        parse_number(row[7]),   # 收盤價
-            "change":       parse_number(row[8]),   # 漲跌價差（帶正負號）
-            "transactions": parse_int(row[9]),      # 成交筆數
+            "name":         row[2].strip(),
+            "volume":       parse_int(row[3]),      # 成交股數
+            "amount":       parse_int(row[4]),      # 成交金額
+            "open":         parse_number(row[5]),   # 開盤價
+            "high":         parse_number(row[6]),   # 最高價
+            "low":          parse_number(row[7]),   # 最低價
+            "close":        parse_number(row[8]),   # 收盤價
+            "change":       parse_number(row[9]),   # 漲跌價差（帶正負號）
+            "transactions": parse_int(row[10]),     # 成交筆數
         }
     return result
 
